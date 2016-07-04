@@ -1,28 +1,20 @@
 /*
- * Copyright (C) 2013-2015 Uncharted Software Inc.
+ * Copyright 2013-2016 Uncharted Software Inc.
  *
- * Property of Uncharted(TM), formerly Oculus Info Inc.
- * http://uncharted.software/
+ *  Property of Uncharted(TM), formerly Oculus Info Inc.
+ *  https://uncharted.software/
  *
- * Released under the MIT License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 @namespace("influent.idl")
@@ -51,7 +43,7 @@ protocol FL_DataTypes {
 	record FL_Uncertainty {
 		/** Placeholder for now. Express original source confidence as a single number from 0 to 1. */
 		double confidence = 1;
-		
+
 		/** Placeholder for now. Express confidence in currency of data as a single number from 0 to 1. */
 		double currency = 1; // ADDED IN 1.6
 	}
@@ -64,10 +56,10 @@ protocol FL_DataTypes {
 	record FL_LinkedData {
 		/** URL of the resource */
 		string url;
-		
+
 		/** MIME type of the resource */
 		union {null, string} mimeType = null;		// CHANGED IN 1.8
-		
+
 		/** description of the linked resource (suitable for display to the user in an hypertext link) */
 		union {null, string} title = null;			// CHANGED IN 1.8
 	}
@@ -80,13 +72,13 @@ protocol FL_DataTypes {
 	record FL_GeoData {
 		/** an address or other place reference; unstructured text field */
 		union {null, string} text = null;			// CHANGED IN 1.8
-		
+
 		/** latitude */
 		union {double, null} lat = null;
-		
+
 		/** longitude */
 		union {double, null} lon = null;
-		
+
 		/** ISO 3 digit country code */
 		union {null, string} cc = null;				// CHANGED IN 1.8
 	}
@@ -99,10 +91,10 @@ protocol FL_DataTypes {
 	 * ADDED IN 1.6
 	 */
 	record FL_Country {
-	
+
 		/** country geo data, including the name as text */
 		FL_GeoData country;
-		
+
 		/** the name of the global region to which the country belongs; any common classification here is acceptable */
 		string region;
 
@@ -120,7 +112,7 @@ protocol FL_DataTypes {
 	record FL_Duration {
 		/** time aggregation level, e.g. use monthly data */
 		FL_DateInterval interval;
-		
+
 		/** number of intervals, e.g. 12 monthly intervals is a 1 year duration */
 		long numIntervals;
 	}
@@ -134,45 +126,45 @@ protocol FL_DataTypes {
 	 */
 	record FL_DateRange {
 		long startDate;
-		
+
 		/** number of bins to return, e.g. 12 monthly bins for 1 year of data */
 		long numBins;
-		
+
 		/** number of intervals in a bin, e.g. 2 months/bin in 12 bins for 2 years of data */
 		FL_Duration durationPerBin;  // CHANGED IN 1.5
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
 
-	/** 
+	/**
 	 * Single value
 	 *
 	 * ADDED IN 1.5
 	 */
 	record FL_SingletonRange {
 		union {string, int, float, double, long, boolean, FL_GeoData} value;
-		
+
 		/** One of STRING, INTEGER, FLOAT, DOUBLE, LONG, BOOLEAN, DATE, GEO, IMAGE */
 		FL_PropertyType type;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
 
-	/** 
+	/**
 	 * List of values
 	 *
 	 * ADDED IN 1.5
 	 */
 	record FL_ListRange {
 		array<union {string, int, float, double, long, boolean, FL_GeoData}> values;
-		
+
 		/** One of STRING, INTEGER, FLOAT, DOUBLE, LONG, BOOLEAN, DATE, GEO */
 		FL_PropertyType type;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
 
-	/** 
+	/**
 	 * Bounded or unbounded range values
 	 *
 	 * ADDED IN 1.5
@@ -180,13 +172,13 @@ protocol FL_DataTypes {
 	record FL_BoundedRange {
 		/** start of range, or null if unbounded start */
 		union {string, int, float, double, long, boolean, FL_GeoData, null} start;
-		
+
 		/** end of range, or null if unbounded start */
 		union {string, int, float, double, long, boolean, FL_GeoData, null} end;
-		
+
 		/** If true, range includes specified endpoint. If false, range is exclusive. */
 		boolean inclusive;
-		
+
 		/** One of STRING, INTEGER, FLOAT, DOUBLE, LONG, BOOLEAN, DATE, GEO */
 		FL_PropertyType type;
 	}
@@ -201,7 +193,7 @@ protocol FL_DataTypes {
 	record FL_Frequency {
 		/** the value range which occurs with some specified frequency */
 		union {string, int, float, double, long, boolean, FL_GeoData, FL_ListRange, FL_BoundedRange} range;
-		
+
 		/** frequency as a count, or probability as a value from 0-1. */
 		double frequency;
 	}
@@ -216,12 +208,12 @@ protocol FL_DataTypes {
 	record FL_DistributionRange {
 		array<FL_Frequency> distribution;
 
-		/** Describes how the values in the distribution are summarised */	
+		/** Describes how the values in the distribution are summarised */
 		FL_RangeType rangeType;
-		
+
 		/** The type of value that the distribution describes. One of STRING, INTEGER, FLOAT, DOUBLE, LONG, BOOLEAN, DATE, GEO */
 		FL_PropertyType type;
-		
+
 		/** True if a probability distribution, false if a frequency distribution */
 		boolean isProbability = false;
 	}
@@ -238,17 +230,17 @@ protocol FL_DataTypes {
 	record FL_Property {
 		/** the field name in the underlying data source */
 		string key;
-		
+
 		/** user-friendly short-text for key (displayable) */
 		union {null, string} friendlyText = null;			// CHANGED IN 1.8
-		
+
 		/** range of values */
 		union {FL_SingletonRange, FL_ListRange, FL_BoundedRange, FL_DistributionRange} range = null; // CHANGED IN 1.6
-		
+
 		union {null, FL_Provenance} provenance = null;
-		
+
 		union {null, FL_Uncertainty} uncertainty = null;
-		
+
 		/** one or more tags from the Tag list, used to map this source-specific field into the semantics of applications */
 		array<FL_PropertyTag> tags;
 
@@ -278,11 +270,11 @@ protocol FL_DataTypes {
 
 		/** Entity Tags (see above, e.g. "ACCOUNT") */
 		array<FL_EntityTag> tags;
-		
+
 		union {FL_Provenance, null} provenance = null;
-		
+
 		union {FL_Uncertainty, null} uncertainty = null;
-		
+
 		array<FL_Property> properties;
 	}
 
@@ -302,10 +294,10 @@ protocol FL_DataTypes {
 
 		/** link types */
 		union {array<string>, null} linkTypes = null;
-		
+
 		/** source entity uid */
 		union {null, string} source = null;				// CHANGED IN 1.8
-		
+
 		/** target entity uid */
 		union {null, string} target = null;				// CHANGED IN 1.8
 
@@ -314,11 +306,11 @@ protocol FL_DataTypes {
 
 		/** true if directed, false if undirected */
 		boolean directed = true;
-		
+
 		union {FL_Provenance, null} provenance = null;
-		
+
 		union {FL_Uncertainty, null} uncertainty = null;
-		
+
 		array<FL_Property> properties;
 	}
 
@@ -333,31 +325,31 @@ protocol FL_DataTypes {
 	record FL_Cluster {
 		/** A unique identifier use to retrieve data about this cluster. Should not be used for non-global identifiers. */
 		string uid;
-		
+
 		/** Entity Tags (see DataTypes, e.g. "CLUSTER") */
 		array<FL_EntityTag> tags;
-		
+
 		union {FL_Provenance, null} provenance = null;
-		
+
 		union {FL_Uncertainty, null} uncertainty = null;
-		
+
 		array<FL_Property> properties;
-		
+
 		/** List of id's of the members of this cluster */
 		array<string> members;
-		
+
 		/** List of id's of the subclusters of this cluster - empty if this is a leaf cluster in cluster hierarchy */
 		array<string> subclusters;
-		
+
 		/** The id of the parent cluster if this is a cluster in a hierarchy - Can be null if this is a root cluster **/
 		union {null, string} parent = null;				// CHANGED IN 1.8
-		
+
 		/** The id of the root cluster (top level cluster) if this is a cluster in a hierarchy - Can be null if this is a root cluster **/
 		union {null, string} root = null;				// CHANGED IN 1.8
-		
+
 		/** The degree from the root this cluster is in the hierarchy - level = 0 if this is a root cluster **/
 		int level = 0;
-		
+
 		/** The version number of the cluster - each time the cluster contents is modified the version should be incremented **/
 		int version = 1;
 	}
@@ -371,16 +363,16 @@ protocol FL_DataTypes {
 	record FL_Future {
 		/** unique id of this task */
 		string uid;
-		
+
 		/** short human-readable description of task for display */
 		string label;
-		
+
 		/** uid of the service task is running on */
 		union {null, string} service = null;			// CHANGED IN 1.8
-		
+
 		/** date/time task was started */
 		long started;
-		
+
 		/** date/time task was completed (negative if not completed yet) */
 		long completed = -1;
 	}
@@ -393,7 +385,7 @@ protocol FL_DataTypes {
 	record FL_Service {
 		/** unique id of this service */
 		string uid;
-		
+
 		/** short human-readable description of service for display */
 		string label;
 	}

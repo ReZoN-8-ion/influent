@@ -1,33 +1,25 @@
 /*
- * Copyright (C) 2013-2015 Uncharted Software Inc.
+ * Copyright 2013-2016 Uncharted Software Inc.
  *
- * Property of Uncharted(TM), formerly Oculus Info Inc.
- * http://uncharted.software/
+ *  Property of Uncharted(TM), formerly Oculus Info Inc.
+ *  https://uncharted.software/
  *
- * Released under the MIT License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 --
 -- FINANCIAL FLOW
--- 
+--
 create table FinFlow (FromEntityId varchar(100), FromEntityType varchar(1), ToEntityId varchar(100), ToEntityType varchar(1), FirstTransaction datetime, LastTransaction datetime, Amount float, CONSTRAINT pk_FF_ID PRIMARY KEY (FromEntityId, ToEntityId));
 
 --
@@ -50,47 +42,47 @@ create table FinEntityYearly    (EntityId varchar(100), PeriodDate datetime, Inb
 
 --
 -- CLUSTER SUMMARY
--- 
+--
 --create table ClusterSummary	(EntityId varchar(100), Property varchar(50), Tag varchar(50), Type varchar(50), Value varchar(200), Stat float, CONSTRAINT pk_CS_ID PRIMARY KEY (EntityId, Property, Value));
 
 --
 -- CLUSTER SUMMARY MEMBERS
--- 
+--
 --create table ClusterSummaryMembers (SummaryId varchar(100), EntityId varchar(100), CONSTRAINT pk_CSM_ID PRIMARY KEY (SummaryId, EntityId));
 
 --
 -- KIVA FLOW GENERATION
 --
 insert into FinFlowDaily (FromEntityId, FromEntityType, ToEntityId, ToEntityType, Amount, PeriodDate)
-	select 
-		TransactionSource, 
-		'A', 
-		TransactionTarget, 
-		'A', 
-		sum(TransactionAmount), 
+	select
+		TransactionSource,
+		'A',
+		TransactionTarget,
+		'A',
+		sum(TransactionAmount),
 		convert(varchar(50), TransactionDate, 101)
 	from Transactions
 	group by TransactionSource, TransactionTarget, convert(varchar(50), TransactionDate, 101)
 
 insert into FinFlowDaily (FromEntityId, FromEntityType, ToEntityId, ToEntityType, Amount, PeriodDate)
- 	select 
+ 	select
 		substring(TransactionSource, 1, charindex('-',TransactionSource)-1),
 		'O',
 		TransactionTarget,
-		'A', 
-		sum(TransactionAmount), 
+		'A',
+		sum(TransactionAmount),
 		convert(varchar(50), TransactionDate, 101)
   	from Transactions
   	where substring(TransactionSource,1,8) = 'partner.'
   	group by substring(TransactionSource,1,charindex('-',TransactionSource)-1), TransactionTarget, convert(varchar(50), TransactionDate, 101)
 
 insert into FinFlowDaily (FromEntityId, FromEntityType, ToEntityId, ToEntityType, Amount, PeriodDate)
- 	select 
-		TransactionSource, 
-		'A', 
-		substring(TransactionTarget,1,charindex('-',TransactionTarget)-1), 
-		'O', 
-		sum(TransactionAmount), 
+ 	select
+		TransactionSource,
+		'A',
+		substring(TransactionTarget,1,charindex('-',TransactionTarget)-1),
+		'O',
+		sum(TransactionAmount),
 		convert(varchar(50), TransactionDate, 101)
   	from Transactions
   	where substring(TransactionTarget,1,8) = 'partner.'
@@ -106,100 +98,100 @@ create index ix_ffd_to   on FinFlowDaily     (ToEntityId,   PeriodDate, FromEnti
 
 -- create Fin Entity Loan table
 create table FinEntityLoan(
-	EntityId varchar(100) PRIMARY KEY, 
-	IncomingLinks int, 
-	UniqueIncomingLinks int,  
-	OutgoingLinks int, 
-	UniqueOutgoingLinks int, 
-	NumTransactions int, 
-	MaxTransaction float, 
-	AvgTransaction float, 
-	StartDate datetime, 
+	EntityId varchar(100) PRIMARY KEY,
+	IncomingLinks int,
+	UniqueIncomingLinks int,
+	OutgoingLinks int,
+	UniqueOutgoingLinks int,
+	NumTransactions int,
+	MaxTransaction float,
+	AvgTransaction float,
+	StartDate datetime,
 	EndDate datetime,
-	[type] varchar(20), 
-	LoanId bigint, 
-	LoanName varchar(512), 
-	LoanUse varchar(max), 
-	LoanActivity varchar(512), 
-	LoanSector varchar(512),  
-	LoanStatus varchar(512), 
-	LoanAmount bigint, 
-	LoanFundedAmount bigint, 
-	LoanBasketAmount bigint, 
-	LoanPaidAmount float, 
-	LoanCurrencyExchangeLossAmount float, 
-	LoanPostedDate datetime, 
-	LoanPaidDate datetime, 
-	LoanDelinquent bit, 
-	LoanFundedDate datetime, 
-	LoanPlannedExpirationDate datetime, 
-	LoanDescriptionTexts_en varchar(max), 
-	LoanDescriptionTexts_ru varchar(max), 
-	LoanDescriptionTexts_fr varchar(max), 
-	LoanDescriptionTexts_es varchar(max), 
-	LoanDescriptionTexts_vi varchar(max), 
-	LoanDescriptionTexts_id varchar(max), 
-	LoanDescriptionTexts_pt varchar(max), 
-	LoanDescriptionTexts_mn varchar(max), 
-	LoanDescriptionTexts_ar varchar(max), 
-	LoanImageId bigint, 
-	LoanImageURL varchar(2048), 
-	LoanVideoId bigint, 
-	LoanVideoYoutubeId varchar(512), 
-	LoanLocationGeoLevel varchar(512), 
-	LoanLocationGeoPairs varchar(512), 
-	LoanLocationGeoType varchar(512), 
-	LoanLocationTown varchar(512), 
-	LoanLocationCountryCode varchar(20), 
-	LoanLocationCountry varchar(512), 
-	LoanTermsLoanAmount bigint, 
-	LoanTermsDisbursalDate datetime, 
-	LoanTermsDisbursalCurrency varchar(30), 
-	LoanTermsDisbursalAmount float, 
-	LoanTermsLossLiabilityCurrencyExchange varchar(512), 
-	LoanTermsLossLiabilityCurrencyExchangeCoverageRate float, 
-	LoanTermsLossLiabilityNonpayment varchar(512), 
-	LoanJournalTotalsEntries bigint, 
-	LoanJournalTotalsBulkEntries bigint, 
-	LoanLat float, 
+	[type] varchar(20),
+	LoanId bigint,
+	LoanName varchar(512),
+	LoanUse varchar(max),
+	LoanActivity varchar(512),
+	LoanSector varchar(512),
+	LoanStatus varchar(512),
+	LoanAmount bigint,
+	LoanFundedAmount bigint,
+	LoanBasketAmount bigint,
+	LoanPaidAmount float,
+	LoanCurrencyExchangeLossAmount float,
+	LoanPostedDate datetime,
+	LoanPaidDate datetime,
+	LoanDelinquent bit,
+	LoanFundedDate datetime,
+	LoanPlannedExpirationDate datetime,
+	LoanDescriptionTexts_en varchar(max),
+	LoanDescriptionTexts_ru varchar(max),
+	LoanDescriptionTexts_fr varchar(max),
+	LoanDescriptionTexts_es varchar(max),
+	LoanDescriptionTexts_vi varchar(max),
+	LoanDescriptionTexts_id varchar(max),
+	LoanDescriptionTexts_pt varchar(max),
+	LoanDescriptionTexts_mn varchar(max),
+	LoanDescriptionTexts_ar varchar(max),
+	LoanImageId bigint,
+	LoanImageURL varchar(2048),
+	LoanVideoId bigint,
+	LoanVideoYoutubeId varchar(512),
+	LoanLocationGeoLevel varchar(512),
+	LoanLocationGeoPairs varchar(512),
+	LoanLocationGeoType varchar(512),
+	LoanLocationTown varchar(512),
+	LoanLocationCountryCode varchar(20),
+	LoanLocationCountry varchar(512),
+	LoanTermsLoanAmount bigint,
+	LoanTermsDisbursalDate datetime,
+	LoanTermsDisbursalCurrency varchar(30),
+	LoanTermsDisbursalAmount float,
+	LoanTermsLossLiabilityCurrencyExchange varchar(512),
+	LoanTermsLossLiabilityCurrencyExchangeCoverageRate float,
+	LoanTermsLossLiabilityNonpayment varchar(512),
+	LoanJournalTotalsEntries bigint,
+	LoanJournalTotalsBulkEntries bigint,
+	LoanLat float,
 	LoanLon float
 );
 
 -- populate table with common attributes
 insert into FinEntityLoan (
-	EntityId, 
-	IncomingLinks, 
-	UniqueIncomingLinks,  
-	OutgoingLinks, 
-	UniqueOutgoingLinks, 
-	NumTransactions, 
-	MaxTransaction, 
-	AvgTransaction, 
-	StartDate, 
+	EntityId,
+	IncomingLinks,
+	UniqueIncomingLinks,
+	OutgoingLinks,
+	UniqueOutgoingLinks,
+	NumTransactions,
+	MaxTransaction,
+	AvgTransaction,
+	StartDate,
 	EndDate
 )
-select 
-	EntityId, 
-	sum(IncomingLinks) as IncomingLinks, 
-	sum(UniqueIncomingLinks) as UniqueIncomingLinks, 
-	sum(OutgoingLinks) as OutgoingLinks, 
-	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, 
-	sum(NumTransactions) as NumTransactions, 
-	max(MaxTransaction) as MaxTransaction, 
-	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction, 
-	min(StartDate) as StartDate, 
+select
+	EntityId,
+	sum(IncomingLinks) as IncomingLinks,
+	sum(UniqueIncomingLinks) as UniqueIncomingLinks,
+	sum(OutgoingLinks) as OutgoingLinks,
+	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks,
+	sum(NumTransactions) as NumTransactions,
+	max(MaxTransaction) as MaxTransaction,
+	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction,
+	min(StartDate) as StartDate,
 	max(EndDate) as EndDate
 from (
-	select  TransactionTarget as EntityId, 
-			count(TransactionSource) as IncomingLinks, 
-			count( distinct TransactionSource ) as UniqueIncomingLinks, 
-			0 as OutgoingLinks, 
-			0 as UniqueOutgoingLinks, 
-			count(TransactionTarget) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate  
+	select  TransactionTarget as EntityId,
+			count(TransactionSource) as IncomingLinks,
+			count( distinct TransactionSource ) as UniqueIncomingLinks,
+			0 as OutgoingLinks,
+			0 as UniqueOutgoingLinks,
+			count(TransactionTarget) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionTarget
 	union
@@ -208,11 +200,11 @@ from (
 			0 as UniqueIncomingLinks,
 			count(TransactionTarget) as OutgoingLinks,
 			count( distinct TransactionTarget ) as UniqueOutgoingLinks,
-			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate 
+			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionSource
 )q
@@ -221,53 +213,53 @@ group by EntityId
 
 -- update table with loan specific attributes
 update FinEntityLoan
-set 
-	[type] = 'loan', 
+set
+	[type] = 'loan',
 	LoanId = FEP.LoanId,
 	LoanName = FEP.LoanName,
-	LoanUse = FEP.LoanUse, 
-	LoanActivity = FEP.LoanActivity, 
-	LoanSector = FEP.LoanSector, 
-	LoanStatus = FEP.LoanStatus, 
-	LoanAmount = FEP.LoanAmount, 
-	LoanFundedAmount = FEP.LoanFundedAmount, 
-	LoanBasketAmount = FEP.LoanBasketAmount, 
-	LoanPaidAmount = FEP.LoanPaidAmount, 
-	LoanCurrencyExchangeLossAmount = FEP.LoanCurrencyExchangeLossAmount, 
-	LoanPostedDate = FEP.LoanPostedDate, 
-	LoanPaidDate = FEP.LoanPaidDate, 
-	LoanDelinquent = FEP.LoanDelinquent, 
-	LoanFundedDate = FEP.LoanFundedDate, 
-	LoanPlannedExpirationDate = FEP.LoanPlannedExpirationDate, 
-	LoanDescriptionTexts_en = FEP.LoanDescriptionTexts_en, 
-	LoanDescriptionTexts_ru = FEP.LoanDescriptionTexts_ru, 
-	LoanDescriptionTexts_fr = FEP.LoanDescriptionTexts_fr, 
-	LoanDescriptionTexts_es = FEP.LoanDescriptionTexts_es, 
+	LoanUse = FEP.LoanUse,
+	LoanActivity = FEP.LoanActivity,
+	LoanSector = FEP.LoanSector,
+	LoanStatus = FEP.LoanStatus,
+	LoanAmount = FEP.LoanAmount,
+	LoanFundedAmount = FEP.LoanFundedAmount,
+	LoanBasketAmount = FEP.LoanBasketAmount,
+	LoanPaidAmount = FEP.LoanPaidAmount,
+	LoanCurrencyExchangeLossAmount = FEP.LoanCurrencyExchangeLossAmount,
+	LoanPostedDate = FEP.LoanPostedDate,
+	LoanPaidDate = FEP.LoanPaidDate,
+	LoanDelinquent = FEP.LoanDelinquent,
+	LoanFundedDate = FEP.LoanFundedDate,
+	LoanPlannedExpirationDate = FEP.LoanPlannedExpirationDate,
+	LoanDescriptionTexts_en = FEP.LoanDescriptionTexts_en,
+	LoanDescriptionTexts_ru = FEP.LoanDescriptionTexts_ru,
+	LoanDescriptionTexts_fr = FEP.LoanDescriptionTexts_fr,
+	LoanDescriptionTexts_es = FEP.LoanDescriptionTexts_es,
 	LoanDescriptionTexts_vi = FEP.LoanDescriptionTexts_vi,
-	LoanDescriptionTexts_id = FEP.LoanDescriptionTexts_id, 
-	LoanDescriptionTexts_pt = FEP.LoanDescriptionTexts_pt, 
-	LoanDescriptionTexts_mn = FEP.LoanDescriptionTexts_mn, 
-	LoanDescriptionTexts_ar = FEP.LoanDescriptionTexts_ar, 
-	LoanImageId = FEP.LoanImageId, 
-	LoanImageURL = FEP.LoanImageURL, 
-	LoanVideoId = FEP.LoanVideoId, 
-	LoanVideoYoutubeId = FEP.LoanVideoYoutubeId, 
-	LoanLocationGeoLevel = FEP.LoanLocationGeoLevel, 
-	LoanLocationGeoPairs = FEP.LoanLocationGeoPairs, 
-	LoanLocationGeoType = FEP.LoanLocationGeoType, 
-	LoanLocationTown = FEP.LoanLocationTown, 
-	LoanLocationCountryCode = FEP.LoanLocationCountryCode, 
+	LoanDescriptionTexts_id = FEP.LoanDescriptionTexts_id,
+	LoanDescriptionTexts_pt = FEP.LoanDescriptionTexts_pt,
+	LoanDescriptionTexts_mn = FEP.LoanDescriptionTexts_mn,
+	LoanDescriptionTexts_ar = FEP.LoanDescriptionTexts_ar,
+	LoanImageId = FEP.LoanImageId,
+	LoanImageURL = FEP.LoanImageURL,
+	LoanVideoId = FEP.LoanVideoId,
+	LoanVideoYoutubeId = FEP.LoanVideoYoutubeId,
+	LoanLocationGeoLevel = FEP.LoanLocationGeoLevel,
+	LoanLocationGeoPairs = FEP.LoanLocationGeoPairs,
+	LoanLocationGeoType = FEP.LoanLocationGeoType,
+	LoanLocationTown = FEP.LoanLocationTown,
+	LoanLocationCountryCode = FEP.LoanLocationCountryCode,
 	LoanLocationCountry = FEP.LoanLocationCountry,
 	LoanTermsLoanAmount = FEP.LoanTermsLoanAmount,
-	LoanTermsDisbursalDate = FEP.LoanTermsDisbursalDate, 
-	LoanTermsDisbursalCurrency = FEP.LoanTermsDisbursalCurrency, 
-	LoanTermsDisbursalAmount = FEP.LoanTermsDisbursalAmount, 
-	LoanTermsLossLiabilityCurrencyExchange = FEP.LoanTermsLossLiabilityCurrencyExchange, 
-	LoanTermsLossLiabilityCurrencyExchangeCoverageRate = FEP.LoanTermsLossLiabilityCurrencyExchangeCoverageRate, 
-	LoanTermsLossLiabilityNonpayment = FEP.LoanTermsLossLiabilityNonpayment, 
-	LoanJournalTotalsEntries = FEP.LoanJournalTotalsEntries, 
-	LoanJournalTotalsBulkEntries = FEP.LoanJournalTotalsBulkEntries, 
-	LoanLat = FEP.LoanLat, 
+	LoanTermsDisbursalDate = FEP.LoanTermsDisbursalDate,
+	LoanTermsDisbursalCurrency = FEP.LoanTermsDisbursalCurrency,
+	LoanTermsDisbursalAmount = FEP.LoanTermsDisbursalAmount,
+	LoanTermsLossLiabilityCurrencyExchange = FEP.LoanTermsLossLiabilityCurrencyExchange,
+	LoanTermsLossLiabilityCurrencyExchangeCoverageRate = FEP.LoanTermsLossLiabilityCurrencyExchangeCoverageRate,
+	LoanTermsLossLiabilityNonpayment = FEP.LoanTermsLossLiabilityNonpayment,
+	LoanJournalTotalsEntries = FEP.LoanJournalTotalsEntries,
+	LoanJournalTotalsBulkEntries = FEP.LoanJournalTotalsBulkEntries,
+	LoanLat = FEP.LoanLat,
 	LoanLon = FEP.LoanLon
 from FinEntityLoan FE
 inner join
@@ -283,17 +275,17 @@ create index ix_fe_lo_id on FinEntityLoan (EntityId);
 
 -- create Fin Entity Lender table
 create table FinEntityLender(
-	EntityId varchar(100) PRIMARY KEY, 
-	IncomingLinks int, 
-	UniqueIncomingLinks int,  
-	OutgoingLinks int, 
-	UniqueOutgoingLinks int, 
-	NumTransactions int, 
-	MaxTransaction float, 
-	AvgTransaction float, 
-	StartDate datetime, 
+	EntityId varchar(100) PRIMARY KEY,
+	IncomingLinks int,
+	UniqueIncomingLinks int,
+	OutgoingLinks int,
+	UniqueOutgoingLinks int,
+	NumTransactions int,
+	MaxTransaction float,
+	AvgTransaction float,
+	StartDate datetime,
 	EndDate datetime,
-	[type] varchar(20), 
+	[type] varchar(20),
 	LenderId varchar(512),
     LenderName varchar(512),
     LenderImageId bigint,
@@ -313,39 +305,39 @@ create table FinEntityLender(
 
 -- populate table with common attributes
 insert into FinEntityLender (
-	EntityId, 
-	IncomingLinks, 
-	UniqueIncomingLinks,  
-	OutgoingLinks, 
-	UniqueOutgoingLinks, 
-	NumTransactions, 
-	MaxTransaction, 
-	AvgTransaction, 
-	StartDate, 
+	EntityId,
+	IncomingLinks,
+	UniqueIncomingLinks,
+	OutgoingLinks,
+	UniqueOutgoingLinks,
+	NumTransactions,
+	MaxTransaction,
+	AvgTransaction,
+	StartDate,
 	EndDate
 )
-select 
-	EntityId, 
-	sum(IncomingLinks) as IncomingLinks, 
-	sum(UniqueIncomingLinks) as UniqueIncomingLinks, 
-	sum(OutgoingLinks) as OutgoingLinks, 
-	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, 
-	sum(NumTransactions) as NumTransactions, 
-	max(MaxTransaction) as MaxTransaction, 
-	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction, 
-	min(StartDate) as StartDate, 
+select
+	EntityId,
+	sum(IncomingLinks) as IncomingLinks,
+	sum(UniqueIncomingLinks) as UniqueIncomingLinks,
+	sum(OutgoingLinks) as OutgoingLinks,
+	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks,
+	sum(NumTransactions) as NumTransactions,
+	max(MaxTransaction) as MaxTransaction,
+	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction,
+	min(StartDate) as StartDate,
 	max(EndDate) as EndDate
 from (
-	select  TransactionTarget as EntityId, 
-			count(TransactionSource) as IncomingLinks, 
-			count( distinct TransactionSource ) as UniqueIncomingLinks, 
-			0 as OutgoingLinks, 
-			0 as UniqueOutgoingLinks, 
-			count(TransactionTarget) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate  
+	select  TransactionTarget as EntityId,
+			count(TransactionSource) as IncomingLinks,
+			count( distinct TransactionSource ) as UniqueIncomingLinks,
+			0 as OutgoingLinks,
+			0 as UniqueOutgoingLinks,
+			count(TransactionTarget) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionTarget
 	union
@@ -354,11 +346,11 @@ from (
 			0 as UniqueIncomingLinks,
 			count(TransactionTarget) as OutgoingLinks,
 			count( distinct TransactionTarget ) as UniqueOutgoingLinks,
-			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate 
+			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionSource
 )q
@@ -367,22 +359,22 @@ group by EntityId
 
 -- update table with lender specific attributes
 update FinEntityLender
-set 
-	[type] = 'lender', 
-	LenderId = FEP.LenderId, 
-	LenderName = FEP.LenderName, 
+set
+	[type] = 'lender',
+	LenderId = FEP.LenderId,
+	LenderName = FEP.LenderName,
 	LenderImageId = FEP.LenderImageId,
 	LenderImageURL = 'http://www.kiva.org/img/default_lender.png',
-	LenderMemberSince = FEP.LenderMemberSince, 
-	LenderWhereabouts = FEP.LenderWhereabouts, 
-	LenderCountryCode = FEP.LenderCountryCode, 
-	LenderOccupation = FEP.LenderOccupation, 
-	LenderOccupationalInfo = FEP.LenderOccupationalInfo, 
-	LenderInviterId = FEP.LenderInviterId, 
-	LenderInviteeCount = FEP.LenderInviteeCount, 
-	LenderLoanCount = FEP.LenderLoanCount, 
-	LenderLoanBecause = FEP.LenderLoanBecause, 
-	LenderLat = FEP.LenderLat, 
+	LenderMemberSince = FEP.LenderMemberSince,
+	LenderWhereabouts = FEP.LenderWhereabouts,
+	LenderCountryCode = FEP.LenderCountryCode,
+	LenderOccupation = FEP.LenderOccupation,
+	LenderOccupationalInfo = FEP.LenderOccupationalInfo,
+	LenderInviterId = FEP.LenderInviterId,
+	LenderInviteeCount = FEP.LenderInviteeCount,
+	LenderLoanCount = FEP.LenderLoanCount,
+	LenderLoanBecause = FEP.LenderLoanBecause,
+	LenderLat = FEP.LenderLat,
 	LenderLon = FEP.LenderLon
 from FinEntityLender FE
 inner join
@@ -398,17 +390,17 @@ create index ix_fe_le_id on FinEntityLender (EntityId);
 
 -- create Fin Entity Partner table
 create table FinEntityPartner(
-	EntityId varchar(100) PRIMARY KEY, 
-	IncomingLinks int, 
-	UniqueIncomingLinks int,  
-	OutgoingLinks int, 
-	UniqueOutgoingLinks int, 
-	NumTransactions int, 
-	MaxTransaction float, 
-	AvgTransaction float, 
-	StartDate datetime, 
+	EntityId varchar(100) PRIMARY KEY,
+	IncomingLinks int,
+	UniqueIncomingLinks int,
+	OutgoingLinks int,
+	UniqueOutgoingLinks int,
+	NumTransactions int,
+	MaxTransaction float,
+	AvgTransaction float,
+	StartDate datetime,
 	EndDate datetime,
-	[type] varchar(20), 
+	[type] varchar(20),
 	PartnerId bigint,
 	OwnerId varchar(512),
     PartnerName varchar(512),
@@ -416,7 +408,7 @@ create table FinEntityPartner(
     PartnerRating varchar(512),
     PartnerDueDiligenceType varchar(512),
     PartnerImageId bigint,
-	PartnerImageURL varchar(2048), 
+	PartnerImageURL varchar(2048),
     PartnerStartDate datetime,
     PartnerDelinquencyRate float,
     PartnerDefaultRate float,
@@ -429,39 +421,39 @@ create table FinEntityPartner(
 
 -- populate table with common attributes for brokers
 insert into FinEntityPartner (
-	EntityId, 
-	IncomingLinks, 
-	UniqueIncomingLinks,  
-	OutgoingLinks, 
-	UniqueOutgoingLinks, 
-	NumTransactions, 
-	MaxTransaction, 
-	AvgTransaction, 
-	StartDate, 
+	EntityId,
+	IncomingLinks,
+	UniqueIncomingLinks,
+	OutgoingLinks,
+	UniqueOutgoingLinks,
+	NumTransactions,
+	MaxTransaction,
+	AvgTransaction,
+	StartDate,
 	EndDate
 )
-select 
-	EntityId, 
-	sum(IncomingLinks) as IncomingLinks, 
-	sum(UniqueIncomingLinks) as UniqueIncomingLinks, 
-	sum(OutgoingLinks) as OutgoingLinks , 
-	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, 
-	sum(NumTransactions) as NumTransactions, 
-	max(MaxTransaction) as MaxTransaction, 
-	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction, 
-	min(StartDate) as StartDate, 
+select
+	EntityId,
+	sum(IncomingLinks) as IncomingLinks,
+	sum(UniqueIncomingLinks) as UniqueIncomingLinks,
+	sum(OutgoingLinks) as OutgoingLinks ,
+	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks,
+	sum(NumTransactions) as NumTransactions,
+	max(MaxTransaction) as MaxTransaction,
+	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction,
+	min(StartDate) as StartDate,
 	max(EndDate) as EndDate
 from (
-	select  TransactionTarget as EntityId, 
-			count(TransactionSource) as IncomingLinks, 
-			count( distinct TransactionSource ) as UniqueIncomingLinks, 
-			0 as OutgoingLinks, 
-			0 as UniqueOutgoingLinks, 
-			count(TransactionTarget) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate  
+	select  TransactionTarget as EntityId,
+			count(TransactionSource) as IncomingLinks,
+			count( distinct TransactionSource ) as UniqueIncomingLinks,
+			0 as OutgoingLinks,
+			0 as UniqueOutgoingLinks,
+			count(TransactionTarget) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionTarget
 	union
@@ -470,11 +462,11 @@ from (
 			0 as UniqueIncomingLinks,
 			count(TransactionTarget) as OutgoingLinks,
 			count( distinct TransactionTarget ) as UniqueOutgoingLinks,
-			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions, 
-			max(TransactionAmount) as MaxTransaction, 
-			sum(TransactionAmount) as TotalTransactions, 
-			min(TransactionDate) as StartDate, 
-			max(TransactionDate) as EndDate 
+			sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions,
+			max(TransactionAmount) as MaxTransaction,
+			sum(TransactionAmount) as TotalTransactions,
+			min(TransactionDate) as StartDate,
+			max(TransactionDate) as EndDate
 	from Transactions
 	group by TransactionSource
 )q
@@ -483,56 +475,56 @@ group by EntityId
 
 -- populate table with common attributes for partners
 insert into FinEntityPartner (
-	EntityId, 
-	IncomingLinks, 
-	UniqueIncomingLinks,  
-	OutgoingLinks, 
-	UniqueOutgoingLinks, 
-	NumTransactions, 
-	MaxTransaction, 
-	AvgTransaction, 
-	StartDate, 
+	EntityId,
+	IncomingLinks,
+	UniqueIncomingLinks,
+	OutgoingLinks,
+	UniqueOutgoingLinks,
+	NumTransactions,
+	MaxTransaction,
+	AvgTransaction,
+	StartDate,
 	EndDate
 )
-select 
-	EntityId, 
-	sum(IncomingLinks) as IncomingLinks, 
-	sum(UniqueIncomingLinks) as UniqueIncomingLinks, 
-	sum(OutgoingLinks) as OutgoingLinks , 
-	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, 
-	sum(NumTransactions) as NumTransactions, 
-	max(MaxTransaction) as MaxTransaction, 
-	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction, 
-	min(StartDate) as StartDate, 
+select
+	EntityId,
+	sum(IncomingLinks) as IncomingLinks,
+	sum(UniqueIncomingLinks) as UniqueIncomingLinks,
+	sum(OutgoingLinks) as OutgoingLinks ,
+	sum(UniqueOutgoingLinks) as UniqueOutgoingLinks,
+	sum(NumTransactions) as NumTransactions,
+	max(MaxTransaction) as MaxTransaction,
+	sum(TotalTransactions) / sum(NumTransactions) as AvgTransaction,
+	min(StartDate) as StartDate,
 	max(EndDate) as EndDate
 from (
-	select 
-		left(TransactionTarget, (charindex('-', TransactionTarget) - 1)) as EntityId, 
-		count(TransactionSource) as IncomingLinks, 
-		count( distinct TransactionSource ) as UniqueIncomingLinks, 
-		0 as OutgoingLinks, 
-		0 as UniqueOutgoingLinks, 
-		count(TransactionTarget) as NumTransactions, 
-		max(TransactionAmount) as MaxTransaction, 
-		sum(TransactionAmount) as TotalTransactions, 
-		min(TransactionDate) as StartDate, 
-		max(TransactionDate) as EndDate  
+	select
+		left(TransactionTarget, (charindex('-', TransactionTarget) - 1)) as EntityId,
+		count(TransactionSource) as IncomingLinks,
+		count( distinct TransactionSource ) as UniqueIncomingLinks,
+		0 as OutgoingLinks,
+		0 as UniqueOutgoingLinks,
+		count(TransactionTarget) as NumTransactions,
+		max(TransactionAmount) as MaxTransaction,
+		sum(TransactionAmount) as TotalTransactions,
+		min(TransactionDate) as StartDate,
+		max(TransactionDate) as EndDate
 	from Transactions
 	where TransactionTarget like 'partner.%'
-	group by 
-		left(TransactionTarget, (charindex('-', TransactionTarget) - 1))	
+	group by
+		left(TransactionTarget, (charindex('-', TransactionTarget) - 1))
 	union
-	select 
+	select
 		left(TransactionSource, (charindex('-', TransactionSource) - 1)) as EntityId,
 		0 as IncomingLinks,
 		0 as UniqueIncomingLinks,
 		count(TransactionTarget) as OutgoingLinks,
 		count( distinct TransactionTarget ) as UniqueOutgoingLinks,
-		sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions, 
-		max(TransactionAmount) as MaxTransaction, 
-		sum(TransactionAmount) as TotalTransactions, 
-		min(TransactionDate) as StartDate, 
-		max(TransactionDate) as EndDate 
+		sum( case when TransactionSource <> TransactionTarget then 1 else 0 end ) as NumTransactions,
+		max(TransactionAmount) as MaxTransaction,
+		sum(TransactionAmount) as TotalTransactions,
+		min(TransactionDate) as StartDate,
+		max(TransactionDate) as EndDate
 	from Transactions
 	where TransactionSource like 'partner.%'
 	group by
@@ -544,15 +536,15 @@ order by EntityId
 
 -- update table with partner specific attributes
 update FinEntityPartner
-set 
-	[type] = 'partner', 
-	PartnerId = FEP.PartnerId, 
-	PartnerName = FEP.PartnerName, 
-	PartnerStatus = FEP.PartnerStatus, 
-	PartnerRating = FEP.PartnerRating, 
-	PartnerDueDiligenceType = FEP.PartnerDueDiligenceType, 
-	PartnerImageId = FEP.PartnerImageId, 
-	PartnerImageURL = FEP.PartnerImageURL, 
+set
+	[type] = 'partner',
+	PartnerId = FEP.PartnerId,
+	PartnerName = FEP.PartnerName,
+	PartnerStatus = FEP.PartnerStatus,
+	PartnerRating = FEP.PartnerRating,
+	PartnerDueDiligenceType = FEP.PartnerDueDiligenceType,
+	PartnerImageId = FEP.PartnerImageId,
+	PartnerImageURL = FEP.PartnerImageURL,
     PartnerStartDate = FEP.PartnerStartDate,
     PartnerDelinquencyRate = FEP.PartnerDelinquencyRate,
     PartnerDefaultRate = FEP.PartnerDefaultRate,
@@ -564,7 +556,7 @@ set
 from FinEntityPartner FE
 inner join
 PartnerProperties FEP
-on 
+on
 case
 	when charindex('-', FE.EntityId) > 0 then left(FE.EntityId, (charindex('-', FE.EntityId) - 1))
 	else FE.EntityId
@@ -585,17 +577,17 @@ insert into FinFlowWeekly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101);
-  
+
 insert into FinFlowMonthly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101);
-  
+
 insert into FinFlowQuarterly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101)
   from FinFlowMonthly
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101);
-  
+
 insert into FinFlowYearly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01', 101)
   from FinFlowMonthly
@@ -612,7 +604,7 @@ create index ix_ffy_from on FinFlowYearly    (FromEntityId, PeriodDate, ToEntity
 create index ix_ffy_to   on FinFlowYearly    (ToEntityId,   PeriodDate, FromEntityId, Amount);
 
 --  build FinFlow
-insert into FinFlow 
+insert into FinFlow
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, min(PeriodDate), max(PeriodDate), sum(Amount)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType;
@@ -632,7 +624,7 @@ insert into temp_ids
  union
  select distinct ToEntityId
   from FinFlowYearly;
-  
+
 insert into FinEntityDaily select Entity, PeriodDate,
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then Amount else 0 end),
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then 1 else 0 end), -- calculate inbound degree
@@ -642,7 +634,7 @@ insert into FinEntityDaily select Entity, PeriodDate,
  from temp_ids
  join FinFlowDaily on FromEntityId = Entity or ToEntityId = Entity
  group by Entity, PeriodDate;
- 
+
 -- cleanup
 drop table temp_ids;
 
@@ -650,22 +642,22 @@ insert into FinEntityWeekly
  select EntityId, CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101);
-  
+
 insert into FinEntityMonthly
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101);
-  
+
 insert into FinEntityQuarterly
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityMonthly
   group by EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101);
-  
+
 insert into FinEntityYearly
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01', 101), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityQuarterly
   group by EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01', 101);
- 
+
 create index ix_fed on FinEntityDaily     (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_few on FinEntityWeekly    (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_fem on FinEntityMonthly   (EntityId, PeriodDate, InboundAmount, OutboundAmount);

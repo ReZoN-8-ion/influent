@@ -1,28 +1,20 @@
 /*
- * Copyright (C) 2013-2015 Uncharted Software Inc.
+ * Copyright 2013-2016 Uncharted Software Inc.
  *
- * Property of Uncharted(TM), formerly Oculus Info Inc.
- * http://uncharted.software/
+ *  Property of Uncharted(TM), formerly Oculus Info Inc.
+ *  https://uncharted.software/
  *
- * Released under the MIT License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 use [DB SCHEMA NAME];
@@ -160,17 +152,17 @@ insert into FinEntityWeekly (EntityId, PeriodDate, InboundAmount, InboundDegree,
  select EntityId, CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101), sum(InboundAmount), sum(InboundDegree), sum(OutboundAmount), sum(OutboundDegree), 0
   from FinEntityDaily
   group by EntityId, CONVERT(varchar(50), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), 101);
-  
+
 insert into FinEntityMonthly (EntityId, PeriodDate, InboundAmount, InboundDegree, OutboundAmount, OutboundDegree, balance)
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101), sum(InboundAmount), sum(InboundDegree), sum(OutboundAmount), sum(OutboundDegree), 0
   from FinEntityDaily
   group by EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', 101);
-  
+
 insert into FinEntityQuarterly (EntityId, PeriodDate, InboundAmount, InboundDegree, OutboundAmount, OutboundDegree, balance)
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101), sum(InboundAmount), sum(InboundDegree), sum(OutboundAmount), sum(OutboundDegree), 0
   from FinEntityMonthly
   group by EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', 101);
-  
+
 insert into FinEntityYearly (EntityId, PeriodDate, InboundAmount, InboundDegree, OutboundAmount, OutboundDegree, balance)
  select EntityId, CONVERT(varchar(50), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01', 101), sum(InboundAmount), sum(InboundDegree), sum(OutboundAmount), sum(OutboundDegree), 0
   from FinEntityQuarterly
@@ -212,30 +204,29 @@ create index ix_cmem on ClusterSummaryMembers  (SummaryId);
 --Summary Description to appear on landing page.
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'InfoSummary' , 'ABOUT' , NULL , 'some interesting description of your dataset' , NULL);
- 
+
 --Number of accounts statistic, that will appear on landing page
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'NumAccounts' , 'ACCOUNTS' , (select count(*) from FinEntity) , NULL , NULL);
- 
+
 --Number of transactions statistic, that will appear on landing page
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'NumTransactions' , 'TRANSACTIONS' , (select count(*) from FinFlow) , NULL , NULL);
- 
+
 --Start date of transactions statistic, that will appear on landing page
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'StartDate' , 'START DATE' , NULL , NULL , (select MIN(firstTransaction) from FinFlow));
- 
+
 --End date of transactions statistic, that will appear on landing page
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'EndDate' , 'END DATE' , NULL , NULL , (select MAX(lastTransaction) from FinFlow));
- 
+
 --Smallest,Largest and Average Transaction statistics, that will appear on landing page
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'TransactionMin' , 'MIN' , (select MIN(Amount) from FinFlow) , NULL , NULL);
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
- values ('All Data' , 'TransactionMax' , 'MAX' , (select MAX(Amount) from FinFlow) , NULL , NULL); 
+ values ('All Data' , 'TransactionMax' , 'MAX' , (select MAX(Amount) from FinFlow) , NULL , NULL);
 insert into DataSummary (Scope , IdKey , Label , NumberValue , StringValue , DateValue)
  values ('All Data' , 'TransactionAVG' , 'AVERAGE' , (select AVG(Amount) from FinFlow) , NULL , NULL);
- 
+
 --Other statistics can be entered in a similiar fashion and will be listed underneath these primary ones.
- 

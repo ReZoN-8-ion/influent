@@ -8,7 +8,7 @@ layout: submenu
 Download
 ========
 
-The Influent source code is available on GitHub. Influent is under ongoing development and is freely available for download under [The MIT License](http://www.opensource.org/licenses/MIT) (MIT) open source licensing. Unlike GNU General Public License (GPL), MIT freely permits distribution of derivative work under proprietary license, without requiring the release of source code.
+The Influent source code is available on GitHub. Influent is under ongoing development and is freely available for download under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) open source licensing.
 
 <a href="https://github.com/unchartedsoftware/influent" class="download-link">Influent Source Code</a>
 

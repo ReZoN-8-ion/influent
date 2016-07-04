@@ -1,28 +1,20 @@
 /*
- * Copyright (C) 2013-2015 Uncharted Software Inc.
+ * Copyright 2013-2016 Uncharted Software Inc.
  *
- * Property of Uncharted(TM), formerly Oculus Info Inc.
- * http://uncharted.software/
+ *  Property of Uncharted(TM), formerly Oculus Info Inc.
+ *  https://uncharted.software/
  *
- * Released under the MIT License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 -- -----------------------------
@@ -32,7 +24,7 @@ create function date(ts timestamp) returns date return cast(ts as date);
 --
 -- FINANCIAL FLOW - ALL
 --  Used to build the aggregate flow diagrams
---   
+--
 --   FromEntityId - entity UID that is the source of the transactions
 --   FromEntityType - type of src entity: O = owner summary, A = account, S = cluster summary entity
 --   ToEntityId - entity UID that is the target of the transactions
@@ -49,7 +41,7 @@ create table FinEntity(EntityId varchar(100) PRIMARY KEY, IncomingLinks int, Uni
 -- FINANCIAL FLOW - AGGREGATED BY TIME
 --  Used to build the aggregate flow diagrams (aggregated by time)
 --  and used to build the highlighted sub-section of the time series charts on entities.
---   
+--
 --   FromEntityId - entity UID that is the source of the transactions
 --   FromEntityType - type of src entity: O = owner summary, A = account, S = cluster summary entity
 --   ToEntityId - entity UID that is the target of the transactions
@@ -66,7 +58,7 @@ create table FinFlowYearly    (FromEntityId varchar(100), FromEntityType varchar
 --
 -- FINANCIAL ENTITY SUMMARY
 --  Used to build the time series charts on entities (aggregated by time).
---   
+--
 --   EntityId - entity UID
 --   Date - start of the time period
 --   InboundAmount - aggregate credits for this time period
@@ -114,7 +106,7 @@ create table ClusterSummaryMembers (SummaryId varchar(100), EntityId varchar(100
 --  These scripts will populate the data views above.
 --
 --  Step 1. Modify this to pull data from your raw data.  Add any transactions to cluster summaries as well.
---  
+--
 insert into FinFlowDaily
  SELECT [source_id], 'A', [dest_id], 'A', SUM([amount]), DATE([dt])
 	FROM YOUR_RAW_DATA
@@ -124,16 +116,16 @@ insert into FinFlowDaily
 insert into FinEntity (EntityId, IncomingLinks, UniqueIncomingLinks,  OutgoingLinks, UniqueOutgoingLinks, NumTransactions, MaxTransaction, AvgTransaction, StartDate, EndDate)
 Select EntityId, sum(IncomingLinks) as IncomingLinks, sum(UniqueIncomingLinks) as UniqueIncomingLinks, sum(OutgoingLinks) as OutgoingLinks , sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, sum(numTransactions) as NumTransactions, max(MaxTransaction) as MaxTransactions, sum(TotalTransactions) / sum(numTransactions) as AvgTransactions, min(StartDate) as StartDate, max(EndDate) as EndDate
 From (
-	select  [dest_id] as EntityId, 
-			count(source_id) as IncomingLinks, 
-			count( distinct source_id ) as UniqueIncomingLinks, 
-			0 as OutgoingLinks, 
-			0 as UniqueOutgoingLinks, 
-			count([dest_id]) as numTransactions, 
-			max([amount]) as MaxTransaction, 
-			sum([amount]) as TotalTransactions, 
-			min([dt]) as StartDate, 
-			max([dt]) as EndDate  
+	select  [dest_id] as EntityId,
+			count(source_id) as IncomingLinks,
+			count( distinct source_id ) as UniqueIncomingLinks,
+			0 as OutgoingLinks,
+			0 as UniqueOutgoingLinks,
+			count([dest_id]) as numTransactions,
+			max([amount]) as MaxTransaction,
+			sum([amount]) as TotalTransactions,
+			min([dt]) as StartDate,
+			max([dt]) as EndDate
 	from YOUR_RAW_DATA
 	group by [dest_id]
 	UNION
@@ -142,11 +134,11 @@ From (
 			0 as UniqueIncomingLinks,
 			count(dest_id) as OutgoingLinks,
 			count( distinct dest_id ) as UniqueOutgoingLinks,
-			sum( case when [source_id] <> [dest_id] then 1 else 0 end ) as numTransactions, 
-			max([amount]) as MaxTransaction, 
-			sum([amount]) as TotalTransactions, 
-			min([dt]) as StartDate, 
-			max([dt]) as EndDate 
+			sum( case when [source_id] <> [dest_id] then 1 else 0 end ) as numTransactions,
+			max([amount]) as MaxTransaction,
+			sum([amount]) as TotalTransactions,
+			min([dt]) as StartDate,
+			max([dt]) as EndDate
 	from YOUR_RAW_DATA
 	group by [source_id]
 )q
@@ -158,7 +150,7 @@ create index ix_ff_id on FinEntity (EntityId);
 --
 --  Step 2. The rest of the script will collect data from FinFlowDaily.
 --          Execute the rest of this script "as-is".
---  
+--
 
 --  build the rest of the FinFlow aggregations
 
@@ -166,17 +158,17 @@ insert into FinFlowWeekly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), DATE_ADD(DATE(PeriodDate), ((1) - DAYOFWEEK(DATE(PeriodDate)) - 6 ) DAY)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, DATE_ADD(DATE(PeriodDate), ((1) - DAYOFWEEK(DATE(PeriodDate)) - 6 ) DAY);
-  
+
 insert into FinFlowMonthly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-MM-"01"'))
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-MM-"01"'));
-  
+
 insert into FinFlowQuarterly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), TIMESTAMP(CONCAT(CONCAT(TO_CHAR(DATE(PeriodDate), 'YYYY-'),case when QUARTER(DATE(PeriodDate))=1 then '01' when QUARTER(DATE(PeriodDate))=2 then '04' when QUARTER(DATE(PeriodDate))=3 then '07' when QUARTER(DATE(PeriodDate))=4 then '10' end),'-01'))
   from FinFlowMonthly
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, TIMESTAMP(CONCAT(CONCAT(TO_CHAR(DATE(PeriodDate), 'YYYY-'),case when QUARTER(DATE(PeriodDate))=1 then '01' when QUARTER(DATE(PeriodDate))=2 then '04' when QUARTER(DATE(PeriodDate))=3 then '07' when QUARTER(DATE(PeriodDate))=4 then '10' end),'-01'));
-  
+
 insert into FinFlowYearly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-"01-01"'))
   from FinFlowMonthly
@@ -195,7 +187,7 @@ create index ix_ffy_from on FinFlowYearly    (FromEntityId, PeriodDate, ToEntity
 create index ix_ffy_to   on FinFlowYearly    (ToEntityId,   PeriodDate, FromEntityId, Amount);
 
 --  build FinFlow
-insert into FinFlow 
+insert into FinFlow
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, min(DATE(PeriodDate)), max(DATE(PeriodDate)), sum(Amount)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType;
@@ -213,7 +205,7 @@ insert into temp_ids
  union
  select distinct ToEntityId
   from FinFlowYearly;
-  
+
 insert into FinEntityDaily select Entity, DATE(PeriodDate),
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then Amount else 0 end),
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then 1 else 0 end), -- calculate inbound degree
@@ -223,7 +215,7 @@ insert into FinEntityDaily select Entity, DATE(PeriodDate),
  from temp_ids
  join FinFlowDaily on FromEntityId = Entity or ToEntityId = Entity
  group by Entity, DATE(PeriodDate);
- 
+
 -- cleanup
 drop table temp_ids;
 
@@ -232,22 +224,22 @@ insert into FinEntityWeekly
  select EntityId, DATE_ADD(DATE(PeriodDate), ((1) - DAYOFWEEK(DATE(PeriodDate)) - 6 ) DAY), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, DATE_ADD(DATE(PeriodDate), ((1) - DAYOFWEEK(DATE(PeriodDate)) - 6 ) DAY);
-  
+
 insert into FinEntityMonthly
  select EntityId, TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-MM-"01"')), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-MM-"01"'));
-  
+
 insert into FinEntityQuarterly
  select EntityId, TIMESTAMP(CONCAT(CONCAT(TO_CHAR(DATE(PeriodDate), 'YYYY-'),case when QUARTER(DATE(PeriodDate))=1 then '01' when QUARTER(DATE(PeriodDate))=2 then '04' when QUARTER(DATE(PeriodDate))=3 then '07' when QUARTER(DATE(PeriodDate))=4 then '10' end),'-01')), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityMonthly
   group by EntityId, TIMESTAMP(CONCAT(CONCAT(TO_CHAR(DATE(PeriodDate), 'YYYY-'),case when QUARTER(DATE(PeriodDate))=1 then '01' when QUARTER(DATE(PeriodDate))=2 then '04' when QUARTER(DATE(PeriodDate))=3 then '07' when QUARTER(DATE(PeriodDate))=4 then '10' end),'-01'));
-  
+
 insert into FinEntityYearly
  select EntityId, TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-"01-01"')), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityQuarterly
   group by EntityId, TIMESTAMP(TO_CHAR(DATE(PeriodDate), 'YYYY-"01-01"'));
- 
+
 create index ix_fed on FinEntityDaily     (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_few on FinEntityWeekly    (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_fem on FinEntityMonthly   (EntityId, PeriodDate, InboundAmount, OutboundAmount);
@@ -265,8 +257,8 @@ create index ix_cmem on ClusterSummaryMembers  (SummaryId);
 
 create table DataSummary (
 	SummaryOrder int NOT NULL,
-	SummaryKey varchar(100) NOT NULL, 
-	SummaryLabel varchar(1000) NULL, 
+	SummaryKey varchar(100) NOT NULL,
+	SummaryLabel varchar(1000) NULL,
 	SummaryValue varchar(1000) NULL,
 	UnformattedNumeric float NULL,
 	UnformattedDatetime datetime NULL,
@@ -275,65 +267,65 @@ create table DataSummary (
 
 --
 -- Step 4. Populate summary stats table with statistic data
---  
+--
 -- Modify this section as needed to reflect the n(ature of your dataset.
 -- The first stat in the table should be a description of your dataset. The following
 -- inserts show an example of typical summary statistics. Note that you will in most cases
 -- want to format the values nicely for reading. The script as is here will simply
 -- copy most types of values over in their default format. UnformattedNumeric
 -- and UnformattedDatetime are added to provide a reference in case the formatted
--- value corrupts or loses valuable information. 
+-- value corrupts or loses valuable information.
 
 -- Modify the following to create a summary description
 insert into DataSummary (SummaryOrder, SummaryKey, SummaryLabel, SummaryValue, UnformattedNumeric, UnformattedDatetime)
 values (
 	1,
-	'InfoSummary', 
+	'InfoSummary',
 	'About',
 	'Some interesting description of your dataset can be written here.',
 	NULL,
 	NULL
 );
- 
+
 -- The following calculates the number of accounts in the data
 insert into DataSummary (SummaryOrder, SummaryKey, SummaryLabel, SummaryValue, UnformattedNumeric, UnformattedDatetime)
 values (
 	2,
-	'NumAccounts', 
-	'Accounts', 
+	'NumAccounts',
+	'Accounts',
 	CAST((select count(*) from FinEntity) AS varchar(100)),
 	(select count(*) from FinEntity),
 	NULL
 );
- 
+
 -- The following calculates the number of transactions in the data
 insert into DataSummary (SummaryOrder, SummaryKey, SummaryLabel, SummaryValue, UnformattedNumeric, UnformattedDatetime)
 values (
 	3,
-	'NumTransactions', 
-	'Transactions', 
+	'NumTransactions',
+	'Transactions',
 	CAST((select count(*) from TRANSACTIONS) AS varchar(100)),
 	(select count(*) from TRANSACTIONS),
 	NULL
 );
- 
+
 -- The following calculates the earliest transaction in the data
 insert into DataSummary (SummaryOrder, SummaryKey, SummaryLabel, SummaryValue, UnformattedNumeric, UnformattedDatetime)
 values (
 	4,
-	'StartDate', 
-	'Earliest Transaction', 
+	'StartDate',
+	'Earliest Transaction',
 	CAST((select MIN(firstTransaction) from FinFlow) AS varchar(100)),
 	NULL,
 	(select MIN(firstTransaction) from FinFlow)
 );
- 
+
 -- The following calculates the latest transaction in the data
 insert into DataSummary (SummaryOrder, SummaryKey, SummaryLabel, SummaryValue, UnformattedNumeric, UnformattedDatetime)
 values (
 	5,
-	'EndDate', 
-	'Latest Transaction', 
+	'EndDate',
+	'Latest Transaction',
 	CAST((select MAX(lastTransaction) from FinFlow) AS varchar(100)),
 	NULL,
 	(select MAX(lastTransaction) from FinFlow)

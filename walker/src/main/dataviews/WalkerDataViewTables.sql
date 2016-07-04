@@ -1,28 +1,20 @@
 /*
- * Copyright (C) 2013-2015 Uncharted Software Inc.
+ * Copyright 2013-2016 Uncharted Software Inc.
  *
- * Property of Uncharted(TM), formerly Oculus Info Inc.
- * http://uncharted.software/
+ *  Property of Uncharted(TM), formerly Oculus Info Inc.
+ *  https://uncharted.software/
  *
- * Released under the MIT License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 -- -----------------------------
@@ -32,7 +24,7 @@
 --
 -- FINANCIAL FLOW - ALL
 --  Used to build the aggregate flow diagrams
---   
+--
 --   FromEntityId - entity UID that is the source of the transactions
 --   FromEntityType - type of src entity: O = owner summary, A = account, S = cluster summary entity
 --   ToEntityId - entity UID that is the target of the transactions
@@ -49,7 +41,7 @@ create table FinEntity(EntityId varchar(100) PRIMARY KEY, IncomingLinks int, Uni
 -- FINANCIAL FLOW - AGGREGATED BY TIME
 --  Used to build the aggregate flow diagrams (aggregated by time)
 --  and used to build the highlighted sub-section of the time series charts on entities.
---   
+--
 --   FromEntityId - entity UID that is the source of the transactions
 --   FromEntityType - type of src entity: O = owner summary, A = account, S = cluster summary entity
 --   ToEntityId - entity UID that is the target of the transactions
@@ -66,7 +58,7 @@ create table FinFlowYearly    (FromEntityId varchar(100), FromEntityType varchar
 --
 -- FINANCIAL ENTITY SUMMARY
 --  Used to build the time series charts on entities (aggregated by time).
---   
+--
 --   EntityId - entity UID
 --   Date - start of the time period
 --   InboundAmount - aggregate credits for this time period
@@ -114,7 +106,7 @@ create table ClusterSummaryMembers (SummaryId varchar(100), EntityId varchar(100
 --  These scripts will populate the data views above.
 --
 --  Step 1. Modify this to pull data from your raw data.  Add any transactions to cluster summaries as well.
---  
+--
 insert into FinFlowDaily
  SELECT FromAddress, 'A', ToAddress, 'A', COUNT(*), SentDate
 	FROM dbo.Transactions
@@ -125,16 +117,16 @@ insert into FinFlowDaily
 insert into FinEntity (EntityId, IncomingLinks, UniqueIncomingLinks,  OutgoingLinks, UniqueOutgoingLinks, NumTransactions, MaxTransaction, AvgTransaction, StartDate, EndDate)
 Select EntityId, sum(IncomingLinks) as IncomingLinks, sum(UniqueIncomingLinks) as UniqueIncomingLinks, sum(OutgoingLinks) as OutgoingLinks , sum(UniqueOutgoingLinks) as UniqueOutgoingLinks, sum(numTransactions) as NumTransactions, max(MaxTransaction) as MaxTransactions, sum(TotalTransactions) / sum(numTransactions) as AvgTransactions, min(StartDate) as StartDate, max(EndDate) as EndDate
 From (
-	select  ToAddress as EntityId, 
-			count(FromAddress) as IncomingLinks, 
-			count( distinct FromAddress ) as UniqueIncomingLinks, 
-			0 as OutgoingLinks, 
-			0 as UniqueOutgoingLinks, 
-			count(ToAddress) as numTransactions, 
-			1 as MaxTransaction,						-- TODO what should this be for Walker? 
+	select  ToAddress as EntityId,
+			count(FromAddress) as IncomingLinks,
+			count( distinct FromAddress ) as UniqueIncomingLinks,
+			0 as OutgoingLinks,
+			0 as UniqueOutgoingLinks,
+			count(ToAddress) as numTransactions,
+			1 as MaxTransaction,						-- TODO what should this be for Walker?
 			count(ToAddress) as TotalTransactions, 		-- TODO what should this be for Walker?
-			min(SentDate) as StartDate, 
-			max(SentDate) as EndDate  
+			min(SentDate) as StartDate,
+			max(SentDate) as EndDate
 	from dbo.Transactions
 	group by ToAddress
 	UNION
@@ -143,22 +135,22 @@ From (
 			0 as UniqueIncomingLinks,
 			count(ToAddress) as OutgoingLinks,
 			count( distinct ToAddress ) as UniqueOutgoingLinks,
-			sum( case when FromAddress <> ToAddress then 1 else 0 end ) as numTransactions, 
+			sum( case when FromAddress <> ToAddress then 1 else 0 end ) as numTransactions,
 			1 as MaxTransaction, 						-- TODO what should this be for Walker?
 			count(FromAddress) as TotalTransactions, 	-- TODO what should this be for Walker?
-			min(SentDate) as StartDate, 
-			max(SentDate) as EndDate 
+			min(SentDate) as StartDate,
+			max(SentDate) as EndDate
 	from dbo.Transactions
 	group by FromAddress
 )q
 group by EntityId
-  
+
 create index ix_ff_id on FinEntity (EntityId);
 
 --
 --  Step 2. The rest of the script will collect data from FinFlowDaily.
 --          Execute the rest of this script "as-is".
---  
+--
 
 --  build the rest of the FinFlow aggregations
 
@@ -166,17 +158,17 @@ insert into FinFlowWeekly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate))
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate));
-  
+
 insert into FinFlowMonthly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01'
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01';
-  
+
 insert into FinFlowQuarterly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01'
   from FinFlowMonthly
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01';
-  
+
 insert into FinFlowYearly
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, sum(Amount), convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01'
   from FinFlowMonthly
@@ -195,7 +187,7 @@ create index ix_ffy_from on FinFlowYearly    (FromEntityId, PeriodDate, ToEntity
 create index ix_ffy_to   on FinFlowYearly    (ToEntityId,   PeriodDate, FromEntityId, Amount);
 
 --  build FinFlow
-insert into FinFlow 
+insert into FinFlow
  select FromEntityId, FromEntityType, ToEntityId, ToEntityType, min(PeriodDate), max(PeriodDate), sum(Amount)
   from FinFlowDaily
   group by FromEntityId, FromEntityType, ToEntityId, ToEntityType;
@@ -213,7 +205,7 @@ insert into temp_ids
  union
  select distinct ToEntityId
   from FinFlowYearly;
-  
+
 insert into FinEntityDaily select Entity, PeriodDate,
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then Amount else 0 end),
        sum(case when ToEntityId = Entity and FromEntityType = 'A' then 1 else 0 end), -- calculate inbound degree
@@ -223,7 +215,7 @@ insert into FinEntityDaily select Entity, PeriodDate,
  from temp_ids
  join FinFlowDaily on FromEntityId = Entity or ToEntityId = Entity
  group by Entity, PeriodDate;
- 
+
 -- cleanup
 drop table temp_ids;
 
@@ -232,22 +224,22 @@ insert into FinEntityWeekly
  select EntityId, (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate)), sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, (DATEADD(dd, @@DATEFIRST - DATEPART(dw, PeriodDate) - 6, PeriodDate));
-  
+
 insert into FinEntityMonthly
  select EntityId,  convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01', sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityDaily
   group by EntityId, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + convert(varchar(2), DATEPART(mm, PeriodDate)) + '/01';
-  
+
 insert into FinEntityQuarterly
  select EntityId, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01', sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityMonthly
   group by EntityId, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/' + case when DATEPART(q, PeriodDate)=1 then '01' when DATEPART(q, PeriodDate)=2 then '04' when DATEPART(q, PeriodDate)=3 then '07' when DATEPART(q, PeriodDate)=4 then '010' end + '/01';
-  
+
 insert into FinEntityYearly
  select EntityId, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01', sum(InboundAmount), sum(IncomingLinks), sum(OutboundAmount), sum(OutgoingLinks), 0
   from FinEntityQuarterly
   group by EntityId, convert(varchar(4), DATEPART(yyyy, PeriodDate)) + '/01/01';
- 
+
 create index ix_fed on FinEntityDaily     (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_few on FinEntityWeekly    (EntityId, PeriodDate, InboundAmount, OutboundAmount);
 create index ix_fem on FinEntityMonthly   (EntityId, PeriodDate, InboundAmount, OutboundAmount);

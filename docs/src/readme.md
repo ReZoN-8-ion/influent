@@ -14,7 +14,7 @@ Influent™ is designed and developed by Uncharted™ to meet the challenges of 
 
 Influent's web-based interface enables analysts to visually and interactively follow transaction flow, revealing actors and behaviors of potential concern that might otherwise go unnoticed. Summary visualization of transactional patterns and actor characteristics, interactive link expansion and dynamic entity clustering enable Influent to operate effectively at scale with big data sources. Influent has been used to explore datasets with millions of entities and hundreds of millions of transactions.
 
-Influent is an open source software product managed by Uncharted Software Inc. The MIT License is used.
+Influent is an open source software product managed by Uncharted Software Inc. The Apache License, Version 2.0 is used.
 
 ### Interested in Learning More? ###
 
